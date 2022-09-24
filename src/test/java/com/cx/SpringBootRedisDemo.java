@@ -1,6 +1,7 @@
 package com.cx;
 
 import com.cx.util.RedisLockUtils;
+import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runner.Runner;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.BoundValueOperations;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -61,7 +63,7 @@ public class SpringBootRedisDemo {
     @Test
     public void test13(){
         // string类型绑定
-        BoundValueOperations<String, Object> boundValueOperations = redisTemplate.boundValueOps("key1");
+       /* BoundValueOperations<String, Object> boundValueOperations = redisTemplate.boundValueOps("key1");
         boundValueOperations.set("value1");
         System.out.println(boundValueOperations.get());
         System.out.println(boundValueOperations.getAndSet("value"));
@@ -72,7 +74,14 @@ public class SpringBootRedisDemo {
         System.out.println(boundValueOperations.size());
         redisTemplate.opsForValue().set("key2",1);
         System.out.println(redisTemplate.opsForValue().increment("key2", 1));
-        System.out.println(redisTemplate.opsForValue().size("key2"));
+        System.out.println(redisTemplate.opsForValue().size("key2"));*/
+        redisTemplate.opsForValue().set("key1","value4");
+        redisTemplate.opsForValue().set("key2","value1");
+        redisTemplate.opsForValue().set("key3","value1");
+        System.out.println(redisTemplate.delete(Lists.newArrayList("key2", "key3")));
+        //System.out.println(redisTemplate.keys("*"));
+        System.out.println(redisTemplate.type("key1"));
+
     }
 
     @Test
