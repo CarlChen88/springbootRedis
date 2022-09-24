@@ -1,5 +1,6 @@
 package com.cx;
 
+import com.cx.util.RedisLockUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runner.Runner;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.BoundValueOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -20,6 +22,29 @@ public class SpringBootRedisDemo {
 
     @Autowired
     private RedisTemplate<String,Object> redisTemplate;
+    @Autowired
+    private RedisLockUtils<String> redisLockUtils;
+
+    @Test
+    public void test14() throws InterruptedException {
+        String lockKey = UUID.randomUUID().toString();
+        for (int i=0;i<3;i++){
+            try {
+                TimeUnit.SECONDS.sleep(4);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            new Thread(()->{
+                redisLockUtils.doWork(lockKey,TimeUnit.SECONDS,3,"chenxiang",this::consumer);
+            }).start();
+        }
+        TimeUnit.SECONDS.sleep(100);
+
+    }
+
+    private void consumer(String s){
+        System.out.println("consumer:"+s);
+    }
     @Test
     public void test12() throws Exception {
         Map<String,Object> map = new HashMap<>();
@@ -31,6 +56,23 @@ public class SpringBootRedisDemo {
         List<Object> objects = redisTemplate.opsForValue().multiGet(list);
         System.out.println(objects);
         DataType one = redisTemplate.type("one");
+    }
+
+    @Test
+    public void test13(){
+        // string类型绑定
+        BoundValueOperations<String, Object> boundValueOperations = redisTemplate.boundValueOps("key1");
+        boundValueOperations.set("value1");
+        System.out.println(boundValueOperations.get());
+        System.out.println(boundValueOperations.getAndSet("value"));
+        System.out.println(boundValueOperations.get());
+        // increment操作 值不是数值会报错
+        // System.out.println(boundValueOperations.increment(1));
+        System.out.println(boundValueOperations.setIfAbsent("value3"));
+        System.out.println(boundValueOperations.size());
+        redisTemplate.opsForValue().set("key2",1);
+        System.out.println(redisTemplate.opsForValue().increment("key2", 1));
+        System.out.println(redisTemplate.opsForValue().size("key2"));
     }
 
     @Test
